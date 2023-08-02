@@ -41,10 +41,20 @@
             <th>End Date</th>
             <th>Product ID</th>
             <th>Cost</th>
-            <th><button type="button" class="btn btn-primary" data-toggle="modal"
-                    data-target="#updateModal">Update</button></th>
-            <th><button type="button" class="btn btn-secondary">Delete</button></th>
+            <th>Update</th>
+            <th>Delete</th>
         </tr>
+        {% for campaign in campaigns %}
+            <tr>
+                {% for key in campaign.keys() %}
+                <td>{{campaign[key]}}</td>
+                {% endfor %}
+            
+                <td><button type="button" class="btn btn-primary" data-toggle="modal"
+                    data-target="#updateModal">Update</button></td>
+                <td><button type="button" class="btn btn-secondary">Delete</button></td>
+            </tr>
+        {% endfor %}
     </table>
     <div id="updateModal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">

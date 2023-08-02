@@ -36,10 +36,20 @@
             <th>Name</th>
             <th>Email</th>
             <th>Daily Rate</th>
-            <th><button type="button" class="btn btn-primary" data-toggle="modal"
-                    data-target="#UpdateChannelModal">Update</button></th>
-            <th><button type="button" class="btn btn-secondary">Delete</button></th>
+            <th></th>
+            <th></th>
         </tr>
+        {% for channel in channels %}
+            <tr>
+                {% for key in channel.keys() %}
+                <td>{{channel[key]}}</td>
+                {% endfor %}
+            
+                <td><button type="button" class="btn btn-primary" data-toggle="modal"
+                    data-target="#UpdateChannelModal">Update</button></td>
+                <td><button type="button" class="btn btn-secondary">Delete</button></td>
+            </tr>
+        {% endfor %}
     </table>
     <div id="UpdateChannelModal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
