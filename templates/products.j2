@@ -15,23 +15,25 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <label for="ProductName">Enter a Product Name</label>
-                    <input type="text" class="form-control" id="ProductName" placeholder="Product">
-                    <label for="Price">Enter a Price</label>
-                    <input type="number" class="form-control" id="Price">
+                    <form action="/products" method="POST" id="insert">
+                        <label for="ProductName">Enter a Product Name</label>
+                        <input type="text" name="pnameinput" class="form-control" id="ProductName" placeholder="Product">
+                        <label for="Price">Enter a Price</label>
+                        <input type="number" step="0.01" name="ppriceinput" class="form-control" id="Price" placeholder="0.00">
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Add Product</button>
+                    <button type="submit" form="insert" value = "insert" class="btn btn-primary">Add Product</button>
                 </div>
             </div>
         </div>
     </div>
     <table class="table">
         <tr>
-            <th>Products ID</th>
-            <th>Name</th>
-            <th>Price</th>
+            <th>Product ID</th>
+            <th>Product Name</th>
+            <th>Per Unit Price</th>
             <th>Update</th>
             <th>Delete</th>
         </tr>
@@ -40,9 +42,9 @@
                 {% for key in product.keys() %}
                 <td>{{product[key]}}</td>
                 {% endfor %}
-                <td><button type="button" class="btn btn-primary" data-toggle="modal"
+                <td><button href="/delete_product/{{product.productID}}" type="button" class="btn btn-primary" data-toggle="modal"
                     data-target="#UpdateProductModal">Update</button></td>
-                <td><button type="button" class="btn btn-secondary">Delete</button></td>
+                <td><a href="/delete_product/{{product.productID}}" class="btn btn-primary">Delete</a></td>
             </tr>
             {% endfor %}
     </table>

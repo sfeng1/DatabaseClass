@@ -1,4 +1,5 @@
 from flask import Flask, render_template, json, redirect
+from flask_mysqldb import MySQL
 from flask import request 
 from flask_navigation import Navigation
 import database.db_connector as db
@@ -36,69 +37,61 @@ def customers():
     results = cursor.fetchall()
     return render_template("customers.j2", customers=results)
 
-@app.route('/campaigns')
+@app.route('/campaigns', methods = ["POST", "GET"])
 def campaigns():
 
-    # Create function for campaigns, relies on modal for input raw data
+    # used when the user presses the add campaign button
     if request.method == "POST":
-        # used when the user presses the add campaign button
-        if request.form.get("Add_Campaign"):
             channelID = request.form["chidinput_dd"]
             startDate = request.form["chstartinput"]
             endDate = request.form["chendinput"]
             productID = request.form["pidinput_dd"]
 
-        # this mess below accounts for several possible null variataions, for sanity lets default to all fields to blank (vs 0)
-        if channelID == "" and productID == "" and endDate == "":
-            query = "INSERT INTO Campaigns (startDate) VALUES (%s);" 
-            cursor = db.execute_query(db_connection=db_connection, query=query)
+            # basic error handling for when endDate is empty
+            if endDate == "":
+                query = "INSERT INTO Campaigns (channelID, startDate, productID) VALUES (%s, %s, %s);;" 
+                cursor = db.execute_query(db_connection=db_connection, query=query, query_params=(channelID, startDate, productID,))
+            
+            else: 
+                query = "INSERT INTO Campaigns (channelID, startDate, endDate, productID) VALUES (%s, %s, %s, %s);" 
+                cursor = db.execute_query(db_connection=db_connection, query=query, query_params=(channelID, startDate, endDate, productID,))
         
-        elif channelID == "" and productID == "":
-            query = "INSERT INTO Campaigns (startDate, endDate) VALUES (%s, %s);"
-            cursor = db.execute_query(db_connection=db_connection, query=query) 
-
-        elif channelID == "":
-            query = "INSERT INTO Campaigns (startDate, endDate, productID) VALUES (%s, %s, %s);" 
-            cursor = db.execute_query(db_connection=db_connection, query=query)
-
-        elif productID == "":
-            query = "INSERT INTO Campaigns (channelID, startDate, endDate) VALUES (%s, %s, %s);" 
-            cursor = db.execute_query(db_connection=db_connection, query=query)
-        
-        else: 
-            query = "INSERT INTO Campaigns (channelID, startDate, endDate, productID) VALUES (%s, %s, %s, %s);" 
-            cursor = db.execute_query(db_connection=db_connection, query=query)
-        
-        # return to product page
-        return redirect("/campaigns")
+            # return to product page
+            return redirect("/campaigns")
     
+    if request.method == "GET":
+        query = "SELECT campaignID,  channelID, startDate, endDate, productID, (datediff(endDate, startDate) * (SELECT rate FROM Channels  WHERE Campaigns.channelID = Channels.channelID)) as cost FROM Campaigns;"
+        cursor = db.execute_query(db_connection=db_connection, query=query)
+        results = cursor.fetchall()
+        return render_template("campaigns.j2", campaigns = results)
 
-    query = "SELECT campaignID,  channelID, startDate, endDate, productID, (datediff(endDate, startDate) * (SELECT rate FROM Channels  WHERE Campaigns.channelID = Channels.channelID)) as cost FROM Campaigns;"
-    cursor = db.execute_query(db_connection=db_connection, query=query)
-    results = cursor.fetchall()
-    return render_template("campaigns.j2", campaigns = results)
-
-@app.route('/channels')
+@app.route('/channels', methods = ["POST", "GET"])
 def channels():
     
     # Create function for channels, relies on modal for input raw data
     if request.method == "POST":
         # used when the user presses the add channel button
-        if request.form.get("Add_Channel"):
-            channelName = request.form["chnameinput"]
-            channelEmail = request.form["chemailinput"]
-            rate = request.form["chrateinput"]
+        channelName = request.form["chnameinput"]
+        channelEmail = request.form["chemailinput"]
+        rate = request.form["chrateinput"]
         
         query = "INSERT INTO Channels (channelName, channelEmail, rate) VALUES (%s, %s, %s);" 
-        cursor = db.execute_query(db_connection=db_connection, query=query)
-        # return to product page
+        cursor = db.execute_query(db_connection=db_connection, query=query, query_params=(channelName, channelEmail, rate,))
+        # return to channel page
         return redirect("/channels")
     
+    if request.method == "GET":
+        query = "SELECT * FROM Channels;"
+        cursor = db.execute_query(db_connection=db_connection, query=query)
+        results = cursor.fetchall()
+        return render_template("channels.j2",channels = results)
 
-    query = "SELECT * FROM Channels;"
-    cursor = db.execute_query(db_connection=db_connection, query=query)
-    results = cursor.fetchall()
-    return render_template("channels.j2",channels = results)
+# Channel Delete
+@app.route("/delete_channel/<int:channelID>")
+def delete_channel(channelID):
+    query = "DELETE FROM Channels WHERE channelID = %s;"
+    db.execute_query(db_connection=db_connection, query=query, query_params=(channelID,))
+    return redirect("/channels")
 
 @app.route('/inventory')
 def inventory():
@@ -107,26 +100,34 @@ def inventory():
     results = cursor.fetchall()
     return render_template("inventory.j2", inventory=results)
 
-@app.route('/products')
+# PRODUCTS
+@app.route('/products', methods = ["POST", "GET"])
 def products():
     
     # Create for products, relies on modal for input raw data
     if request.method == "POST":
         # used when the user presses the add product button
-        if request.form.get("Add_Product"):
-            productName = request.form["pnameinput"]
-            productPrice = request.form["ppriceinput"]
+        productName = request.form["pnameinput"]
+        productPrice = request.form["ppriceinput"]
         
         query = "INSERT INTO Products (productName, productPrice) VALUES (%s, %s);" 
-        cursor = db.execute_query(db_connection=db_connection, query=query)
+        cursor = db.execute_query(db_connection=db_connection, query=query, query_params=(productName, productPrice,))
+        print("productName"+productName)
         # return to product page
         return redirect("/products")
 
+    if request.method == "GET":
+        query = "SELECT * FROM Products;"
+        cursor = db.execute_query(db_connection=db_connection, query=query)
+        results = cursor.fetchall()
+        return render_template("products.j2", products=results)
 
-    query = "SELECT * FROM Products;"
-    cursor = db.execute_query(db_connection=db_connection, query=query)
-    results = cursor.fetchall()
-    return render_template("products.j2", products=results)
+# Product Delete
+@app.route("/delete_product/<int:productID>")
+def delete_product(productID):
+    query = "DELETE FROM Products WHERE productID = %s;"
+    db.execute_query(db_connection=db_connection, query=query, query_params=(productID,))
+    return redirect("/products")
 
 @app.route('/saleItems')
 def saleItems():
@@ -144,11 +145,11 @@ def sales():
 
 
 # Delete route for Campaigns
-@app.route('/delete_campaign/<int:caidinput>')
-def delete_campaign(caidinput):
+@app.route('/delete_campaign/<int:campaignID>')
+def delete_campaign(campaignID):
     # query to delete a campaign row via caidinput passed from the delete button modal
     query = "DELETE FROM Campaigns WHERE campaignID = '%s';"
-    cursor = db.execute_query(db_connection=db_connection, query=query)
+    db.execute_query(db_connection=db_connection, query=query, query_params=(campaignID,))
     
     # return to campaign page
     return redirect("/campaigns")
