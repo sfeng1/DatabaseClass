@@ -36,9 +36,18 @@
             <th>Product ID</th>
             <th>Quantity</th>
             <th>Line Item Revenue</th>
-            <th><button type="button" class="btn btn-primary" data-toggle="modal"
-                    data-target="#UpdateSaleItemModal">Update</button></th>
-            <th><button>Delete</button></th>
+            <th>Update</th>
+            <th>Delete</th>
         </tr>
+        {% for item in saleItems %}
+            <tr>
+                {% for key in item.keys() %}
+                <td>{{item[key]}}</td>
+                {% endfor %}
+                <td><button type="button" class="btn btn-primary" data-toggle="modal"
+                    data-target="#UpdateProductModal">Update</button></td>
+                <td><button type="button" class="btn btn-secondary">Delete</button></td>
+            </tr>
+            {% endfor %}
     </table>
 {% endblock %}

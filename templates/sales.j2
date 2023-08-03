@@ -36,10 +36,19 @@
             <th>Customer ID</th>
             <th>Sale Date</th>
             <th>Total Sale Value</th>
-            <th><button type="button" class="btn btn-primary" data-toggle="modal"
-                    data-target="#UpdateSaleModal">Update</button></th>
-            <th><button>Delete</button></th>
+            <th>Update</th>
+            <th>Delete</th>
         </tr>
+        {% for sale in sales %}
+            <tr>
+                {% for key in sale.keys() %}
+                <td>{{sale[key]}}</td>
+                {% endfor %}
+                <td><button type="button" class="btn btn-primary" data-toggle="modal"
+                    data-target="#UpdateSaleModal">Update</button></td>
+                <td><button type="button" class="btn btn-secondary">Delete</button></td>
+            </tr>
+            {% endfor %}
     </table>
     <div id="UpdateSaleModal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
